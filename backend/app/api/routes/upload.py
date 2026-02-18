@@ -1,6 +1,8 @@
 import os
 import uuid
 import json
+import tempfile
+from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.pdf_loader import load_pdf_text
 from app.services.text_cleaner import clean_text
@@ -13,6 +15,19 @@ from concurrent.futures import ThreadPoolExecutor
 
 router = APIRouter()
 executor = ThreadPoolExecutor(max_workers=2)
+
+
+def _resolve_upload_dir() -> Path:
+    configured_dir = os.getenv("UPLOAD_DIR")
+    if configured_dir:
+        upload_dir = Path(configured_dir)
+    elif os.getenv("VERCEL"):
+        upload_dir = Path(tempfile.gettempdir()) / "researcher_uploads"
+    else:
+        upload_dir = Path(__file__).resolve().parents[3] / "uploads"
+
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    return upload_dir
 
 def run_graph_sync(paper_id: str, paper_text: str, sections: dict):
     """Run the graph synchronously in a thread pool."""
@@ -50,16 +65,17 @@ def run_graph_sync(paper_id: str, paper_text: str, sections: dict):
 async def upload_paper(file: UploadFile = File(...)):
     try:
         job_id = str(uuid.uuid4())
-        file_path = os.path.join("uploads", f"{job_id}.pdf")
+        upload_dir = _resolve_upload_dir()
+        file_path = upload_dir / f"{job_id}.pdf"
 
         with open(file_path, "wb") as f:
             f.write(await file.read())
 
-        raw_text = load_pdf_text(file_path)
+        raw_text = load_pdf_text(str(file_path))
         cleaned = clean_text(raw_text)
         sections = parse_sections(cleaned)
 
-        paper_id = store_paper(file.filename, file_path)
+        paper_id = store_paper(file.filename, str(file_path))
 
         for name, content in sections.items():
             embedding = get_embedding(content)
