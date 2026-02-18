@@ -67,6 +67,11 @@ function ReviewDashboard() {
     critic
   } = reviewData;
 
+  const safeMethodology = methodology_review || { score: 0, issues: [], suggestions: [] };
+  const safeNovelty = novelty_review || { score: 0, issues: [], suggestions: [], similarity_max: null };
+  const safeCitation = citation_review || { score: 0, issues: [], suggestions: [] };
+  const safeClarity = clarity_review || { score: 0, issues: [], suggestions: [] };
+
 
   return (
     <div className="review-dashboard">
@@ -99,22 +104,22 @@ function ReviewDashboard() {
         <div className="metrics-grid">
           <ScoreCard
             title="Methodology"
-            score={methodology_review.score}
+            score={safeMethodology.score}
             maxScore={10}
           />
           <ScoreCard
             title="Clarity"
-            score={clarity_review.score}
+            score={safeClarity.score}
             maxScore={10}
           />
           <ScoreCard
             title="Citation"
-            score={citation_review.score}
+            score={safeCitation.score}
             maxScore={10}
           />
           <ScoreCard
             title="Novelty"
-            score={novelty_review.score}
+            score={safeNovelty.score}
             maxScore={10}
           />
         </div>
@@ -125,33 +130,33 @@ function ReviewDashboard() {
           <div className="feedback-grid">
             <SectionFeedback
               title="Methodology Agent"
-              score={methodology_review.score}
-              issues={methodology_review.issues}
-              suggestions={methodology_review.suggestions}
+              score={safeMethodology.score}
+              issues={safeMethodology.issues}
+              suggestions={safeMethodology.suggestions}
             />
 
             <SectionFeedback
               title="Clarity Agent"
-              score={clarity_review.score}
-              issues={clarity_review.issues}
-              suggestions={clarity_review.suggestions}
+              score={safeClarity.score}
+              issues={safeClarity.issues}
+              suggestions={safeClarity.suggestions}
             />
 
             <SectionFeedback
               title="Citation Agent"
-              score={citation_review.score}
-              issues={citation_review.issues}
-              suggestions={citation_review.suggestions}
+              score={safeCitation.score}
+              issues={safeCitation.issues}
+              suggestions={safeCitation.suggestions}
             />
 
             <SectionFeedback
               title="Novelty Agent"
-              score={novelty_review.score}
-              issues={novelty_review.issues}
-              suggestions={novelty_review.suggestions}
-              additionalInfo={novelty_review.similarity_max !== undefined && {
+              score={safeNovelty.score}
+              issues={safeNovelty.issues}
+              suggestions={safeNovelty.suggestions}
+              additionalInfo={safeNovelty.similarity_max !== undefined && safeNovelty.similarity_max !== null && {
                 label: 'Max Similarity with Existing Work',
-                value: `${(novelty_review.similarity_max * 100).toFixed(1)}%`
+                value: `${(safeNovelty.similarity_max * 100).toFixed(1)}%`
               }}
             />
           </div>

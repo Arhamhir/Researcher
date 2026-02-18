@@ -126,7 +126,7 @@ def get_paper_review(paper_id: str) -> dict:
         if not review.get("final_decision"):
             verdict = review_row.get("verdict")
             notes = review_row.get("notes")
-            if verdict:
+            if verdict and str(verdict).lower() != "pending":
                 review["final_decision"] = {
                     "decision": verdict,
                     "confidence": "Medium",

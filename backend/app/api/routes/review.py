@@ -32,11 +32,18 @@ def get_review_status(paper_id: str):
             # Paper uploaded but review not complete yet
             return {"status": "processing", "progress": 50}
         
-        # Check if review has final decision with a decision field
+        # Check if review has final decision and all section reviews populated
         final_decision = review.get("final_decision")
+        decision_value = (final_decision or {}).get("decision")
+        has_all_sections = all([
+            review.get("methodology_review"),
+            review.get("novelty_review"),
+            review.get("citation_review"),
+            review.get("clarity_review"),
+        ])
         print(f"[STATUS] Final decision: {final_decision}")
         
-        if final_decision and final_decision.get("decision"):
+        if decision_value and str(decision_value).lower() != "pending" and has_all_sections:
             return {
                 "status": "complete",
                 "progress": 100,
