@@ -55,6 +55,10 @@ def novelty_node(state: dict) -> dict:
     
     max_similarity = max([r["similarity"] for r in results], default=0.0)
 
+    # Graded bands instead of a hard binary jump - this is a lexical
+    # similarity check (see embeddings.py), not semantic novelty, so a
+    # moderate overlap shouldn't swing straight from "high novelty" to
+    # "reject-worthy" on a single threshold crossing.
     if max_similarity > SIMILARITY_THRESHOLD:
         score = 3
         issues = [
@@ -63,6 +67,14 @@ def novelty_node(state: dict) -> dict:
         suggestions = [
             "Clearly articulate how this work differs from existing literature.",
             "Emphasize unique contributions or novel methodology."
+        ]
+    elif max_similarity > SIMILARITY_THRESHOLD * 0.7:
+        score = 6
+        issues = [
+            f"Moderate lexical overlap ({max_similarity:.2f}) with existing work - likely a related area, not necessarily a duplicate."
+        ]
+        suggestions = [
+            "Explicitly differentiate this work from the closely related paper(s) found.",
         ]
     else:
         score = 8

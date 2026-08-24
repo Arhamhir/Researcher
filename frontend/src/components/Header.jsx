@@ -24,12 +24,17 @@ function Header() {
           </Link>
 
           <nav className="nav" aria-label="Primary">
-            <Link
-              to="/"
-              className={`nav-link ${!onReview ? 'active' : ''}`}
-            >
-              Upload
-            </Link>
+            {onReview ? (
+              <Link to="/" className="nav-link">
+                Upload
+              </Link>
+            ) : (
+              <>
+                <a href="#how-it-works" className="nav-link">How it works</a>
+                <a href="#reviewers" className="nav-link">Reviewers</a>
+                <a href="#upload-panel" className="nav-link nav-link-cta">Upload a paper</a>
+              </>
+            )}
           </nav>
         </div>
       </div>

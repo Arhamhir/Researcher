@@ -48,10 +48,25 @@ def methodology_node(state: dict) -> dict:
     response = get_json_response(prompt)
 
     if "error" in response:
+        # An API/infra failure (rate limit, timeout, bad key) says nothing
+        # about the paper's actual methodology - it is not evidence of a
+        # "fundamentally weak" method. Scoring it 0 would incorrectly trip
+        # the critic's hard-reject threshold for what could be a strong
+        # paper. Fall back to a neutral, content-aware heuristic instead so
+        # infrastructure hiccups can't manufacture a false rejection.
+        word_count = len(methodology_text.split())
+        has_signal = any(
+            keyword in methodology_text.lower()
+            for keyword in ("baseline", "dataset", "evaluat", "experiment", "metric")
+        )
+        score = 6.0 if (word_count >= 150 and has_signal) else 5.0
         parsed = {
-            "score": 0.0,
-            "issues": [f"LLM call failed: {response.get('error', 'Unknown error')}"],
-            "suggestions": ["Ensure GROQ_API_KEY is set and valid."]
+            "score": score,
+            "issues": [
+                f"Automated methodology review failed ({response.get('error', 'unknown error')}); "
+                "a neutral heuristic score was used instead of a full assessment."
+            ],
+            "suggestions": ["Re-run the review once the underlying API issue clears for a full assessment."]
         }
     else:
         parsed = normalize_review(response)

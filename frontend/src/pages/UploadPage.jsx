@@ -2,8 +2,82 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { paperAPI } from '../services/api';
 import PipelineProgress from '../components/PipelineProgress';
-import { IconUpload, IconFile, IconClose, IconAlert, IconCheck } from '../components/icons';
+import {
+  IconUpload,
+  IconFile,
+  IconClose,
+  IconAlert,
+  IconCheck,
+  IconParse,
+  IconMethodology,
+  IconNovelty,
+  IconCitation,
+  IconClarity,
+  IconSynthesize,
+  IconReport,
+} from '../components/icons';
 import './UploadPage.css';
+
+const PROCESS_STEPS = [
+  {
+    Icon: IconUpload,
+    title: 'Upload',
+    body: 'Drop in a PDF. No account, no queue, no formatting requirements.',
+  },
+  {
+    Icon: IconParse,
+    title: 'Parse',
+    body: 'Sections are located automatically — abstract, methodology, results, references — from whatever headings the paper actually uses.',
+  },
+  {
+    Icon: IconSynthesize,
+    title: 'Review, in parallel',
+    body: 'Four independent reviewers read the relevant sections at the same time, each scoring only their own dimension.',
+  },
+  {
+    Icon: IconReport,
+    title: 'Verdict',
+    body: 'Scores are cross-checked for contradictions, then combined into one calibrated decision with full written justification.',
+  },
+];
+
+const REVIEWERS = [
+  {
+    Icon: IconMethodology,
+    title: 'Methodology',
+    body: 'Checks experimental design, baselines, and reproducibility. Rewards rigor described in the paper — partial credit for methods that are sound but under-detailed.',
+  },
+  {
+    Icon: IconNovelty,
+    title: 'Novelty',
+    body: 'Compares your abstract and introduction against everything already reviewed, to flag likely overlap or duplicate submissions.',
+  },
+  {
+    Icon: IconCitation,
+    title: 'Citation',
+    body: "Reads for how well claims are grounded in prior work — whether that's a dedicated related-work section or citations woven through the text.",
+  },
+  {
+    Icon: IconClarity,
+    title: 'Clarity',
+    body: 'Judges whether the argument is easy to follow end to end — not whether it matches one reviewer’s personal writing style.',
+  },
+];
+
+const VALUE_PROPS = [
+  {
+    title: 'Minutes, not months',
+    body: "Traditional peer review can take three to six months to come back. Get a full four-dimension review while you're still on the same page.",
+  },
+  {
+    title: 'Transparent scoring',
+    body: 'Every score ships with the specific issues and suggestions behind it — never a bare verdict with no way to see the reasoning.',
+  },
+  {
+    title: 'Consistent, not political',
+    body: 'The same four reviewers, the same rubric, every submission. No reviewer relationships, reputation, or politics in the loop.',
+  },
+];
 
 const STATUS_MESSAGES = [
   'Parsing the PDF and locating each section.',
@@ -223,17 +297,19 @@ function UploadPage() {
               </h1>
               <p>
                 Four reviewers score methodology, novelty, citations, and clarity in
-                parallel. A critic checks their verdicts against each other before
-                anything is finalized &mdash; contradictions trigger another pass.
+                parallel. A critic cross-checks the four verdicts for contradictions
+                and turns them into one calibrated decision &mdash; full written
+                reasoning included, no months-long queue.
               </p>
               <div className="upload-hero-meta">
                 <span className="meta-pill">PDF only</span>
                 <span className="meta-pill">Under 10MB</span>
                 <span className="meta-pill">4 parallel reviewers</span>
+                <span className="meta-pill">No sign-up required</span>
               </div>
             </div>
 
-            <div className="upload-panel card">
+            <div className="upload-panel card" id="upload-panel">
               {!file ? (
                 <div
                   className={`drop-zone ${dragActive ? 'drag-active' : ''}`}
@@ -310,6 +386,82 @@ function UploadPage() {
           </div>
         )}
       </div>
+
+      {!isProcessing && (
+        <>
+          <section id="how-it-works" className="landing-section">
+            <div className="container">
+              <div className="landing-heading">
+                <span className="landing-kicker mono">How it works</span>
+                <h2>From PDF to verdict, four steps.</h2>
+                <p>No setup, no reviewer accounts to wrangle &mdash; the whole pipeline runs the moment you drop in a file.</p>
+              </div>
+              <ol className="process-strip">
+                {PROCESS_STEPS.map(({ Icon, title, body }, index) => (
+                  <li className="process-step" key={title}>
+                    <div className="process-step-top">
+                      <span className="process-step-number mono">{String(index + 1).padStart(2, '0')}</span>
+                      <div className="process-step-icon">
+                        <Icon size={22} />
+                      </div>
+                    </div>
+                    <h3>{title}</h3>
+                    <p>{body}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
+          <section id="reviewers" className="landing-section landing-section-alt">
+            <div className="container">
+              <div className="landing-heading">
+                <span className="landing-kicker mono">The four reviewers</span>
+                <h2>Every submission gets the same rubric.</h2>
+                <p>Each reviewer only ever judges its own dimension &mdash; no single agent can see (or be swayed by) the others' scores.</p>
+              </div>
+              <div className="reviewer-grid">
+                {REVIEWERS.map(({ Icon, title, body }) => (
+                  <div className="reviewer-card" key={title}>
+                    <div className="reviewer-card-icon">
+                      <Icon size={24} />
+                    </div>
+                    <h3>{title}</h3>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="landing-section">
+            <div className="container">
+              <div className="landing-heading">
+                <span className="landing-kicker mono">Why Researcher</span>
+                <h2>Honest feedback, on your timeline.</h2>
+              </div>
+              <div className="value-grid">
+                {VALUE_PROPS.map(({ title, body }) => (
+                  <div className="value-card" key={title}>
+                    <h3>{title}</h3>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="landing-cta card">
+                <div>
+                  <h3>Ready to see where your paper stands?</h3>
+                  <p>Upload a PDF and get scored feedback on methodology, novelty, citations, and clarity in one pass.</p>
+                </div>
+                <a href="#upload-panel" className="btn btn-primary btn-large">
+                  Upload a paper
+                </a>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
