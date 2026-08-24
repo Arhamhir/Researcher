@@ -5,24 +5,40 @@ from app.core.config import SUPABASE_URL, SUPABASE_KEY
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+_NUL = chr(0)
+
+
+def _sanitize(value):
+    """Postgres text/jsonb columns reject the NUL character outright
+    (error 22P05). PDF extraction and LLM output can both smuggle one in,
+    so strip it recursively from anything headed into a Supabase insert."""
+    if isinstance(value, str):
+        return value.replace(_NUL, "")
+    if isinstance(value, dict):
+        return {k: _sanitize(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_sanitize(v) for v in value]
+    return value
+
+
 def store_paper(title: str, file_path: str) -> str:
     paper_id = str(uuid.uuid4())
-    supabase.table("papers").insert({   
+    supabase.table("papers").insert(_sanitize({
         "id": paper_id,
         "title": title,
         "file_path": file_path
-    }).execute()
+    })).execute()
     return paper_id
 
 def store_section(paper_id: str, section_name: str, content: str, embedding: list[float]):
     section_id = str(uuid.uuid4())
-    payload = {
+    payload = _sanitize({
         "id": section_id,
         "paper_id": paper_id,
         "section_name": section_name,
         "content": content,
         "embedding": embedding
-    }
+    })
 
     try:
         supabase.table("paper_sections").insert(payload).execute()
@@ -160,13 +176,13 @@ def store_review(paper_id: str, review_data: dict) -> str:
         
         # First, create a review record linking paper to review
         review_id = str(uuid.uuid4())
-        supabase.table("reviews").insert({
+        supabase.table("reviews").insert(_sanitize({
             "id": review_id,
             "paper_id": paper_id,
             "reviewer_id": system_reviewer_id,
             "verdict": review_data.get("final_decision", {}).get("decision", "Pending"),
             "notes": review_data.get("final_decision", {}).get("justification", "")
-        }).execute()
+        })).execute()
         
         # Store each review component as a log entry linked to this review
         nodes_to_store = [
@@ -183,12 +199,12 @@ def store_review(paper_id: str, review_data: dict) -> str:
                 continue
                 
             log_id = str(uuid.uuid4())
-            supabase.table("review_logs").insert({
+            supabase.table("review_logs").insert(_sanitize({
                 "id": log_id,
                 "review_id": review_id,
                 "node_name": node_name,
                 "node_output": json.dumps(node_output) if not isinstance(node_output, str) else node_output
-            }).execute()
+            })).execute()
         
         return review_id
     except Exception as e:
