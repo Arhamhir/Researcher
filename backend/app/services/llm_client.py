@@ -68,13 +68,22 @@ def _response_format(model: str) -> dict:
 
 
 def _extra_params(model: str) -> dict:
-    """gpt-oss reasoning controls; harmless no-op for other models."""
+    """gpt-oss reasoning controls; harmless no-op for other models.
+
+    reasoning_effort and reasoning_format are Groq-specific fields, not
+    part of the openai SDK's typed create() signature. Newer SDK versions
+    reject unknown top-level kwargs outright (TypeError), so send them via
+    extra_body, which bypasses signature validation and goes straight into
+    the JSON request body regardless of installed SDK version.
+    """
     if model.startswith("openai/gpt-oss"):
         return {
-            "reasoning_effort": GROQ_REASONING_EFFORT,
-            # Keep chain-of-thought out of message.content so it never
-            # collides with the JSON answer we need to parse.
-            "reasoning_format": "hidden",
+            "extra_body": {
+                "reasoning_effort": GROQ_REASONING_EFFORT,
+                # Keep chain-of-thought out of message.content so it never
+                # collides with the JSON answer we need to parse.
+                "reasoning_format": "hidden",
+            }
         }
     return {}
 
