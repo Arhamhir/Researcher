@@ -1,0 +1,70 @@
+.score-card {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  background: var(--bg-secondary);
+  transition: border-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.score-card:hover {
+  border-color: var(--hairline-strong);
+  transform: translateY(-2px);
+}
+
+.score-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  color: var(--text-muted);
+}
+
+.score-card-icon {
+  display: flex;
+  color: var(--accent);
+}
+
+.score-title {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.score-number {
+  font-family: var(--font-mono);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-max {
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.score-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin: 0.2rem 0 0.9rem;
+}
+
+.score-bar {
+  height: 5px;
+  background: var(--bg-inset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transition: width 0.9s var(--ease-settle);
+}
