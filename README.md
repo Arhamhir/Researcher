@@ -3,7 +3,7 @@
 Minimal, sleek, and honest AI peer review for academic papers using multi-agent orchestration.
 
 ### Live preview
-Visit https://researcher-snowy.vercel.app to start reviewing papers.
+Visit https://researcher-three.vercel.app to start reviewing papers.
 
 ## Workflow
 
